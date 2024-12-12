@@ -1,15 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using Library.Models.DTOs;
 
 namespace Library.Models;
 
 public class MaterialDTO
 {
     public int Id { get; set; }
-    [Required]
     public string MaterialName { get; set; }
-    [Required]
-    public MaterialType MaterialTypeDTO { get; set; }
-    [Required]
-    public Genre GenreDTO { get; set; }
+    public int MaterialTypeId { get; set; }
+    public MaterialTypeDTO MaterialType { get; set; }
+    public int GenreId { get; set; }
+    public GenreDTO Genre { get; set; }
     public DateTime? OutOfCirculationSince { get; set; }
 }

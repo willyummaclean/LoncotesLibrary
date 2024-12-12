@@ -39,7 +39,7 @@ public class LoncotesLibraryDbContext : DbContext
         new Material {Id = 1, MaterialName = "Dracula", MaterialTypeId = 1, GenreId = 1},
         new Material {Id = 2, MaterialName = "E.T", MaterialTypeId = 2, GenreId = 2},
         new Material {Id = 3, MaterialName = "Silly Putty", MaterialTypeId = 4, GenreId = 4},
-        new Material {Id = 4, MaterialName = "Paranoid", MaterialTypeId = 3, GenreId = 3}
+        new Material {Id = 4, MaterialName = "Paranoid", MaterialTypeId = 3, GenreId = 3, OutOfCirculationSince = new DateTime(2024, 12, 12)}
         });
 
         modelBuilder.Entity<Patron>().HasData(new Patron[]
@@ -51,9 +51,9 @@ public class LoncotesLibraryDbContext : DbContext
 
         modelBuilder.Entity<Checkout>().HasData(new Checkout[]
         {
-        new Checkout {Id = 1, MaterialId = 1, PatronId = 1, CheckedOutSince = new DateTime(12/07/2024) },
-        new Checkout {Id = 2, MaterialId = 2, PatronId = 2, CheckedOutSince = new DateTime(12/06/2024)},
-        new Checkout {Id = 3, MaterialId = 3, PatronId = 3, CheckedOutSince = new DateTime(12/05/2024) }
+        new Checkout {Id = 1, MaterialId = 1, PatronId = 1, CheckedOutSince = new DateTime(2024, 12, 07)},
+        new Checkout {Id = 2, MaterialId = 2, PatronId = 2, CheckedOutSince = new DateTime(2024, 12, 06)},
+        new Checkout {Id = 3, MaterialId = 3, PatronId = 3, CheckedOutSince = new DateTime(2024, 12, 05)}
         });
 
     }
