@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Library.Models;
 
-public class CheckoutDTP
+public class CheckoutDTO
 {
     public int Id { get; set; }
     public int MaterialId { get; set; }

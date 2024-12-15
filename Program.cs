@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
 using Library.Models.DTOs;
+using System.Runtime.ExceptionServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,10 +55,57 @@ app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
     }).ToList();
 });
 
-app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db) =>
+app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 {
+    var material = db.Materials.Where(m => m.Id == id)
+    .Include(m => m.MaterialType)
+    .Include(m => m.Genre)
+    .Include(m => m.Checkouts)
+    .ThenInclude(m => m.Patron)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Name = m.MaterialType.Name,
+            DaysCheckedOut = m.MaterialType.DaysCheckedOut
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Name = m.Genre.Name
+        },
+        OutOfCirculationSince = m.OutOfCirculationSince,
+        Checkouts = m.Checkouts.Select(c => new CheckoutDTO
+        {
+            Id = c.Id,
+            PatronId = c.PatronId,
+            Patron = new PatronDTO
+            {
+                FirstName = c.Patron.FirstName,
+                LastName = c.Patron.LastName,
+                Address = c.Patron.Address,
+                IsActive = c.Patron.IsActive,
+                Email = c.Patron.Email
+            },
+            CheckedOutSince = c.CheckedOutSince,
+            ReturnDate = c.ReturnDate
+
+        }).ToList()
+
+    })
+    .FirstOrDefault();
+
+
+    if (material == null)
+    { return Results.NotFound(); }
+
+    return Results.Ok(material);
 
 });
+
 
 
 

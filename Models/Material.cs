@@ -16,4 +16,5 @@ public class Material
     [Required]
     public Genre Genre { get; set; }
     public DateTime? OutOfCirculationSince { get; set; }
+    public ICollection<Checkout> Checkouts { get; set; }
 }
