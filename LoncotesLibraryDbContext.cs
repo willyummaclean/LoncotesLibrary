@@ -3,7 +3,6 @@ using Library.Models;
 
 public class LoncotesLibraryDbContext : DbContext
 {
-
     public DbSet<Genre> Genres { get; set; }
     public DbSet<MaterialType> MaterialTypes { get; set; }
     public DbSet<Patron> Patrons { get; set; }

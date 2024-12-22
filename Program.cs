@@ -29,31 +29,31 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
-{
-    return db.Materials.Where(material => material.OutOfCirculationSince == null)
-    .Include(m => m.MaterialType)
-    .Include(m => m.Genre)
-    .Select(m => new MaterialDTO
-    {
-        Id = m.Id,
-        MaterialName = m.MaterialName,
-        MaterialTypeId = m.MaterialTypeId,
-        MaterialType = new MaterialTypeDTO
-        {
-            Id = m.MaterialType.Id,
-            Name = m.MaterialType.Name,
-            DaysCheckedOut = m.MaterialType.DaysCheckedOut
-        },
-        GenreId = m.GenreId,
-        Genre = new GenreDTO
-        {
-            Id = m.Genre.Id,
-            Name = m.Genre.Name
-        },
-        OutOfCirculationSince = m.OutOfCirculationSince
-    }).ToList();
-});
+// app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
+// {
+//     return db.Materials.Where(material => material.OutOfCirculationSince == null)
+//     .Include(m => m.MaterialType)
+//     .Include(m => m.Genre)
+//     .Select(m => new MaterialDTO
+//     {
+//         Id = m.Id,
+//         MaterialName = m.MaterialName,
+//         MaterialTypeId = m.MaterialTypeId,
+//         MaterialType = new MaterialTypeDTO
+//         {
+//             Id = m.MaterialType.Id,
+//             Name = m.MaterialType.Name,
+//             DaysCheckedOut = m.MaterialType.DaysCheckedOut
+//         },
+//         GenreId = m.GenreId,
+//         Genre = new GenreDTO
+//         {
+//             Id = m.Genre.Id,
+//             Name = m.Genre.Name
+//         },
+//         OutOfCirculationSince = m.OutOfCirculationSince
+//     }).ToList();
+// });
 
 app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 {
@@ -103,6 +103,116 @@ app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
     { return Results.NotFound(); }
 
     return Results.Ok(material);
+
+});
+
+app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? genreId, int? materialTypeId) =>
+{
+    if (genreId == null && materialTypeId == null)
+    {
+        return db.Materials.Where(material => material.OutOfCirculationSince == null)
+    .Include(m => m.MaterialType)
+    .Include(m => m.Genre)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            DaysCheckedOut = m.MaterialType.DaysCheckedOut
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        },
+        OutOfCirculationSince = m.OutOfCirculationSince
+    }).ToList();
+
+    }
+    else if (genreId == null && materialTypeId.HasValue == true)
+    {
+        return db.Materials.Where(material => material.OutOfCirculationSince == null)
+    .Where(material => material.MaterialTypeId == materialTypeId)
+    .Include(m => m.MaterialType)
+    .Include(m => m.Genre)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            DaysCheckedOut = m.MaterialType.DaysCheckedOut
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        },
+        OutOfCirculationSince = m.OutOfCirculationSince
+    }).ToList();
+    }
+    else if (genreId.HasValue == true && materialTypeId == null)
+    {
+        return db.Materials.Where(material => material.OutOfCirculationSince == null)
+    .Where(material => material.GenreId == genreId)
+    .Include(m => m.MaterialType)
+    .Include(m => m.Genre)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            DaysCheckedOut = m.MaterialType.DaysCheckedOut
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        },
+        OutOfCirculationSince = m.OutOfCirculationSince
+    }).ToList();
+    }
+    else
+    {
+        return db.Materials.Where(material => material.OutOfCirculationSince == null)
+    .Where(material => material.GenreId == genreId)
+    .Where(material => material.MaterialTypeId == materialTypeId)
+    .Include(m => m.MaterialType)
+    .Include(m => m.Genre)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            DaysCheckedOut = m.MaterialType.DaysCheckedOut
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        },
+        OutOfCirculationSince = m.OutOfCirculationSince
+    }).ToList();
+    }
 
 });
 
