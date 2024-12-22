@@ -108,12 +108,35 @@ app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 
 app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? genreId, int? materialTypeId) =>
 {
-    if (genreId == null && materialTypeId == null)
+    // Validation checks
+    if (genreId.HasValue && !db.Genres.Any(g => g.Id == genreId.Value))
     {
-        return db.Materials.Where(material => material.OutOfCirculationSince == null)
-    .Include(m => m.MaterialType)
-    .Include(m => m.Genre)
-    .Select(m => new MaterialDTO
+        return Results.BadRequest($"Genre with Id {genreId.Value} does not exist.");
+    }
+
+    if (materialTypeId.HasValue && !db.MaterialTypes.Any(mt => mt.Id == materialTypeId.Value))
+    {
+        return Results.BadRequest($"MaterialType with Id {materialTypeId.Value} does not exist.");
+    }
+
+    // Query materials with optional filtering
+    var query = db.Materials
+        .Where(m => m.OutOfCirculationSince == null) // Only in-circulation materials
+        .Include(m => m.MaterialType)
+        .Include(m => m.Genre)
+        .AsQueryable();
+
+    if (genreId.HasValue)
+    {
+        query = query.Where(m => m.GenreId == genreId.Value);
+    }
+
+    if (materialTypeId.HasValue)
+    {
+        query = query.Where(m => m.MaterialTypeId == materialTypeId.Value);
+    }
+
+    var materials = query.Select(m => new MaterialDTO
     {
         Id = m.Id,
         MaterialName = m.MaterialName,
@@ -133,87 +156,14 @@ app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? genreId, int? ma
         OutOfCirculationSince = m.OutOfCirculationSince
     }).ToList();
 
-    }
-    else if (genreId == null && materialTypeId.HasValue == true)
-    {
-        return db.Materials.Where(material => material.OutOfCirculationSince == null)
-    .Where(material => material.MaterialTypeId == materialTypeId)
-    .Include(m => m.MaterialType)
-    .Include(m => m.Genre)
-    .Select(m => new MaterialDTO
-    {
-        Id = m.Id,
-        MaterialName = m.MaterialName,
-        MaterialTypeId = m.MaterialTypeId,
-        MaterialType = new MaterialTypeDTO
-        {
-            Id = m.MaterialType.Id,
-            Name = m.MaterialType.Name,
-            DaysCheckedOut = m.MaterialType.DaysCheckedOut
-        },
-        GenreId = m.GenreId,
-        Genre = new GenreDTO
-        {
-            Id = m.Genre.Id,
-            Name = m.Genre.Name
-        },
-        OutOfCirculationSince = m.OutOfCirculationSince
-    }).ToList();
-    }
-    else if (genreId.HasValue == true && materialTypeId == null)
-    {
-        return db.Materials.Where(material => material.OutOfCirculationSince == null)
-    .Where(material => material.GenreId == genreId)
-    .Include(m => m.MaterialType)
-    .Include(m => m.Genre)
-    .Select(m => new MaterialDTO
-    {
-        Id = m.Id,
-        MaterialName = m.MaterialName,
-        MaterialTypeId = m.MaterialTypeId,
-        MaterialType = new MaterialTypeDTO
-        {
-            Id = m.MaterialType.Id,
-            Name = m.MaterialType.Name,
-            DaysCheckedOut = m.MaterialType.DaysCheckedOut
-        },
-        GenreId = m.GenreId,
-        Genre = new GenreDTO
-        {
-            Id = m.Genre.Id,
-            Name = m.Genre.Name
-        },
-        OutOfCirculationSince = m.OutOfCirculationSince
-    }).ToList();
-    }
-    else
-    {
-        return db.Materials.Where(material => material.OutOfCirculationSince == null)
-    .Where(material => material.GenreId == genreId)
-    .Where(material => material.MaterialTypeId == materialTypeId)
-    .Include(m => m.MaterialType)
-    .Include(m => m.Genre)
-    .Select(m => new MaterialDTO
-    {
-        Id = m.Id,
-        MaterialName = m.MaterialName,
-        MaterialTypeId = m.MaterialTypeId,
-        MaterialType = new MaterialTypeDTO
-        {
-            Id = m.MaterialType.Id,
-            Name = m.MaterialType.Name,
-            DaysCheckedOut = m.MaterialType.DaysCheckedOut
-        },
-        GenreId = m.GenreId,
-        Genre = new GenreDTO
-        {
-            Id = m.Genre.Id,
-            Name = m.Genre.Name
-        },
-        OutOfCirculationSince = m.OutOfCirculationSince
-    }).ToList();
-    }
+    return Results.Ok(materials);
+});
 
+app.MapPost("/api/materials", (LoncotesLibraryDbContext db, Material material) =>
+{
+    db.Materials.Add(material);
+    db.SaveChanges();
+    return Results.Created($"/api/campsites/{material.Id}", material);
 });
 
 
