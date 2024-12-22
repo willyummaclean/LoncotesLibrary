@@ -166,6 +166,54 @@ app.MapPost("/api/materials", (LoncotesLibraryDbContext db, Material material) =
     return Results.Created($"/api/campsites/{material.Id}", material);
 });
 
+app.MapDelete("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    Material material = db.Materials.SingleOrDefault(m => m.Id == id);
+    if (material == null)
+    {
+        return Results.NotFound();
+    }
+    material.OutOfCirculationSince = DateTime.Now;
+    db.SaveChanges();
+    return Results.NoContent();
+
+});
+
+app.MapGet("/api/genres", (LoncotesLibraryDbContext db) =>
+{
+    return db.Genres
+    .Select(g => new GenreDTO
+    {
+        Id = g.Id,
+        Name = g.Name
+    }).ToList();
+});
+
+app.MapGet("/api/materialtypes", (LoncotesLibraryDbContext db) =>
+{
+    return db.MaterialTypes
+    .Select(m => new MaterialTypeDTO
+    {
+        Id = m.Id,
+        Name = m.Name,
+        DaysCheckedOut = m.DaysCheckedOut
+    }).ToList();
+});
+
+app.MapGet("/api/patrons", (LoncotesLibraryDbContext db) =>
+{
+    return db.Patrons
+    .Select(p => new PatronDTO
+    {
+        Id = p.Id,
+        FirstName = p.FirstName,
+        LastName = p.LastName,
+        Address = p.Address,
+        IsActive = p.IsActive,
+        Email = p.Email
+    }).ToList();
+});
+
 
 
 
