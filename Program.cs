@@ -318,6 +318,66 @@ app.MapDelete("api/patrons/{id}", (LoncotesLibraryDbContext db, int id) =>
 
 });
 
+app.MapGet("/api/materials/available", (LoncotesLibraryDbContext db) =>
+{
+    return db.Materials
+    .Where(m => m.OutOfCirculationSince == null)
+    .Where(m => m.Checkouts.All(co => co.ReturnDate != null))
+    .Select(material => new MaterialDTO
+    {
+        Id = material.Id,
+        MaterialName = material.MaterialName,
+        MaterialTypeId = material.MaterialTypeId,
+        GenreId = material.GenreId,
+        OutOfCirculationSince = material.OutOfCirculationSince
+    })
+    .ToList();
+});
+
+app.MapGet("/api/checkouts/overdue", (LoncotesLibraryDbContext db) =>
+{
+    return db.Checkouts
+    .Include(p => p.Patron)
+    .Include(co => co.Material)
+    .ThenInclude(m => m.MaterialType)
+    .Where(co =>
+        (DateTime.Today - co.CheckedOutSince).Days >
+        co.Material.MaterialType.DaysCheckedOut &&
+        co.ReturnDate == null)
+        .Select(co => new CheckoutWithLateFeeDTO
+        {
+            Id = co.Id,
+            MaterialId = co.MaterialId,
+            Material = new MaterialDTO
+            {
+                Id = co.Material.Id,
+                MaterialName = co.Material.MaterialName,
+                MaterialTypeId = co.Material.MaterialTypeId,
+                MaterialType = new MaterialTypeDTO
+                {
+                    Id = co.Material.MaterialTypeId,
+                    Name = co.Material.MaterialType.Name,
+                    DaysCheckedOut = co.Material.MaterialType.DaysCheckedOut
+                },
+                GenreId = co.Material.GenreId,
+                OutOfCirculationSince = co.Material.OutOfCirculationSince
+            },
+            PatronId = co.PatronId,
+            Patron = new PatronDTO
+            {
+                Id = co.Patron.Id,
+                FirstName = co.Patron.FirstName,
+                LastName = co.Patron.LastName,
+                Address = co.Patron.Address,
+                Email = co.Patron.Email,
+                IsActive = co.Patron.IsActive
+            },
+            CheckedOutSince = co.CheckedOutSince,
+            ReturnDate = co.ReturnDate
+        })
+    .ToList();
+});
+
 app.Run();
 
 

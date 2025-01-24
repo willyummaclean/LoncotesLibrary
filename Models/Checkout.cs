@@ -16,4 +16,6 @@ public class Checkout
     [Required]
     public DateTime CheckedOutSince { get; set; }
     public DateTime? ReturnDate { get; set; }
+
+    public bool Paid { get; set; } = false;
 }
